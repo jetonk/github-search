@@ -3,7 +3,7 @@
   <Chip
     v-for="(value, key) in filters"
     :key="key"
-    :label="filters[key].language"
+    :label="key"
     removable
     @remove="handleChipRemove"
   />
@@ -29,15 +29,12 @@ const endDate = ref();
 const stars = ref();
 
 const filters = computed(() => store.getters["repositories/filters"]);
-const language = computed(() => store.getters["repositories/language"]);
 
 const handleChipRemove = (filter) => {
   store.dispatch("repositories/removeFilter", filter);
 };
 
 function search() {
-  console.log("startDate", startDate);
-
   store.dispatch("repositories/fetchRepositories", {
     startDate: startDate.value,
     endDate: endDate.value,

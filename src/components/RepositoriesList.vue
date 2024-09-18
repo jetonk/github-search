@@ -2,16 +2,24 @@
   <div>
     <div v-if="loading">Loading...</div>
     <div v-else-if="error">Error: {{ error }}</div>
-    <div v-else>
-      <Card v-for="repo in repositories" :key="repo.id">
+    <div v-else class="card-container">
+      <Card class="card" v-for="(filter, key) in filters" :key="key">
         <template #title>
-          <a :href="repo.html_url" target="_blank">{{ repo.full_name }}</a>
+          {{ key }}
         </template>
-        ⭐ {{ repo.stargazers_count }}
         <template #content>
-          <p class="m-0">
-            {{ repo.description }}
-          </p>
+          <ul>
+            <li v-for="repository in filter.repositories" :key="repository.id">
+              <h3>{{ repository.name }}</h3>
+              <a :href="repository.html_url" target="_blank">{{
+                repository.full_name
+              }}</a>
+              ⭐ {{ repository.stargazers_count }}
+              {{ repository.description }}
+              <p>Full Name: {{ repository.full_name }}</p>
+              <p>Owner: {{ repository.owner.login }}</p>
+            </li>
+          </ul>
         </template>
       </Card>
     </div>
@@ -27,9 +35,17 @@ import Card from "primevue/card";
 
 const store = useStore();
 
-const repositories = computed(() => store.getters["repositories/repositories"]);
+const filters = computed(() => store.state.repositories.filters);
 const loading = computed(() => store.getters["repositories/loading"]);
 const error = computed(() => store.getters["repositories/error"]);
 </script>
 
-<style></style>
+<style scoped>
+.card-container {
+  display: flex;
+}
+.card {
+  width: 300px;
+  margin-left: 15px;
+}
+</style>
