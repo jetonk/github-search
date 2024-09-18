@@ -1,3 +1,5 @@
+import { formatDateString } from "../utils/date";
+
 export default {
   namespaced: true,
   state: {
@@ -5,6 +7,8 @@ export default {
     filters: {},
     loading: false,
     error: null,
+    page: 1,
+    resultsPerPage: 10,
   },
   mutations: {
     SET_REPOSITORIES(state, { repositories, filter }) {
@@ -14,6 +18,9 @@ export default {
         repositories: repositories,
       };
       console.log("SET_REPOSITORIES state", state);
+    },
+    SET_PAGE(state) {
+      state.page = state.page + 1;
     },
     SET_LOADING(state, loading) {
       state.loading = loading;
@@ -38,16 +45,16 @@ export default {
     },
   },
   actions: {
-    async fetchRepositories({ commit }, filter) {
-      console.log("fetchRepositories filter", filter);
-
-      // commit("SET_FILTER", filter);
+    async fetchRepositories({ commit, state }, filter) {
+      const { language, page, resultsPerPage } = state;
       commit("SET_LOADING", true);
       commit("SET_ERROR", null);
-      const url =
-        "https://api.github.com/search/repositories?q=language:javascript&sort=stars&order=desc";
+      const startDate = formatDateString(filter.startDate);
+      const endDate = formatDateString(filter.endDate);
+      const url = `https://api.github.com/search/repositories?q=language:${language}+stars:>=${filter.stars}+created:${startDate}..${endDate}&sort=stars&order=desc&page=${page}&per_page=${resultsPerPage}`;
 
       try {
+        commit("SET_PAGE");
         const response = await fetch(url, {
           headers: {
             Accept: "application/vnd.github+json",

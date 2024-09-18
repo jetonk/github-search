@@ -1,14 +1,13 @@
 <template>
-  <div>
-    <AutoComplete
-      placeholder="Search language"
-      v-model="value"
-      :suggestions="filteredItems"
-      optionLabel="name"
-      @complete="handleSearch"
-      @item-select="onItemSelect"
-    />
-  </div>
+  <AutoComplete
+    placeholder="Search language"
+    v-model="value"
+    :suggestions="filteredItems"
+    optionLabel="name"
+    @complete="handleSearch"
+    @item-select="onItemSelect"
+    class="custom-autocomplete"
+  />
 </template>
 
 <script setup>
@@ -24,15 +23,13 @@ const value = ref("");
 const filteredItems = ref();
 
 const handleSearch = (event) => {
-  setTimeout(() => {
-    if (!event.query.trim().length) {
-      filteredItems.value = [...languages.value];
-    } else {
-      filteredItems.value = languages.filter((lang) => {
-        return lang.name.toLowerCase().startsWith(event.query.toLowerCase());
-      });
-    }
-  }, 250);
+  if (!event.query.trim().length) {
+    filteredItems.value = [...languages.value];
+  } else {
+    filteredItems.value = languages.filter((lang) => {
+      return lang.name.toLowerCase().startsWith(event.query.toLowerCase());
+    });
+  }
 };
 
 const onItemSelect = (event) => {
@@ -40,3 +37,12 @@ const onItemSelect = (event) => {
   store.dispatch("repositories/setLanguage", { language: selectedItem.name });
 };
 </script>
+<style scoped>
+.custom-autocomplete {
+  --input-width: 100%;
+}
+
+.custom-autocomplete ::v-deep .p-inputtext {
+  width: var(--input-width);
+}
+</style>

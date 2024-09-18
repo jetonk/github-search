@@ -1,22 +1,27 @@
 <template>
-  <h3>Filters</h3>
-  <Chip
-    v-for="(value, key) in filters"
-    :key="key"
-    :label="key"
-    removable
-    @remove="handleChipRemove"
-  />
-  <SearchBar />
-
-  <div>From: <DatePicker v-model="startDate" /></div>
-  <div>To: <DatePicker v-model="endDate" /></div>
-  <div>Stars: <input type="number" v-model="stars" /></div>
-  <Button label="Search" @click="search" />
+  <div class="filter-chips">
+    <h3>Filters</h3>
+    <Chip
+      v-for="(value, key) in filters"
+      :key="key"
+      :label="key"
+      removable
+      @remove="handleChipRemove"
+      class="custom-chip"
+    />
+  </div>
+  <div class="filter-container">
+    <SearchBar />
+    <DatePicker v-model="startDate" placeholder="Date from" />
+    <DatePicker v-model="endDate" placeholder="Date to" />
+    <InputText type="number" v-model="stars" placeholder="Stars" />
+    <Button class="btn-search" label="Search" @click="search" />
+  </div>
 </template>
 <script setup>
 import { computed, ref } from "vue";
 import { useStore } from "vuex";
+import InputText from "primevue/inputtext";
 
 import SearchBar from "../components/SearchBar.vue";
 import Chip from "primevue/chip";
@@ -42,3 +47,28 @@ function search() {
   });
 }
 </script>
+<style scoped>
+.filter-chips {
+  padding: 15px;
+}
+.filter-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 15px;
+}
+
+.filter-container * {
+  margin-top: 5px;
+}
+
+.custom-chip {
+  flex-shrink: 0;
+  flex-grow: 0;
+  flex-basis: auto;
+}
+
+.btn-search {
+  margin-top: 10px;
+}
+</style>

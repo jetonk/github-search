@@ -8,7 +8,24 @@
           {{ key }}
         </template>
         <template #content>
-          <ul>
+          <VirtualScroller
+            :items="filter.repositories"
+            :itemSize="50"
+            class="border border-surface-200 dark:border-surface-700 rounded"
+            style="width: 270px; height: 400px"
+          >
+            <template v-slot:item="{ item, options }">
+              <div class="card-item">
+                {{ item.name }} /
+                <a :href="item.html_url" target="_blank">{{
+                  item.full_name
+                }}</a>
+                {{ item.description }}
+                ⭐ {{ item.stargazers_count }}
+              </div>
+            </template>
+          </VirtualScroller>
+          <!-- <ul>
             <li v-for="repository in filter.repositories" :key="repository.id">
               <h3>{{ repository.name }}</h3>
               <a :href="repository.html_url" target="_blank">{{
@@ -19,7 +36,7 @@
               <p>Full Name: {{ repository.full_name }}</p>
               <p>Owner: {{ repository.owner.login }}</p>
             </li>
-          </ul>
+          </ul> -->
         </template>
       </Card>
     </div>
@@ -29,6 +46,7 @@
 <script setup>
 import { computed } from "vue";
 import { useStore } from "vuex";
+import VirtualScroller from "primevue/virtualscroller";
 
 // components
 import Card from "primevue/card";
@@ -47,5 +65,11 @@ const error = computed(() => store.getters["repositories/error"]);
 .card {
   width: 300px;
   margin-left: 15px;
+}
+.card-item {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  margin-top: 15px;
 }
 </style>
