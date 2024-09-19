@@ -1,7 +1,11 @@
 <template>
   <div>
-    <div v-if="loading">Loading...</div>
-    <div v-else-if="error">Error: {{ error }}</div>
+    <div v-if="languages.length > 0" class="headline">
+      <h3>Github Repositories</h3>
+      <div>Between: {{ startDate }} and {{ endDate }}</div>
+      <div>With at least {{ stars }} stars</div>
+    </div>
+    <div v-if="error">Error: {{ error }}</div>
     <div v-else class="card-container">
       <Card class="card" v-for="(filter, key) in filters" :key="key">
         <template #title>
@@ -11,8 +15,10 @@
           <VirtualScroller
             :items="filter.repositories"
             :itemSize="50"
+            :showLoader="true"
+            :loading="loading"
             class="border border-surface-200 dark:border-surface-700 rounded"
-            style="width: 270px; height: 400px"
+            style="width: 270px; height: 99vh"
           >
             <template v-slot:item="{ item, options }">
               <div class="card-item">
@@ -25,18 +31,6 @@
               </div>
             </template>
           </VirtualScroller>
-          <!-- <ul>
-            <li v-for="repository in filter.repositories" :key="repository.id">
-              <h3>{{ repository.name }}</h3>
-              <a :href="repository.html_url" target="_blank">{{
-                repository.full_name
-              }}</a>
-              ⭐ {{ repository.stargazers_count }}
-              {{ repository.description }}
-              <p>Full Name: {{ repository.full_name }}</p>
-              <p>Owner: {{ repository.owner.login }}</p>
-            </li>
-          </ul> -->
         </template>
       </Card>
     </div>
@@ -54,11 +48,19 @@ import Card from "primevue/card";
 const store = useStore();
 
 const filters = computed(() => store.state.repositories.filters);
-const loading = computed(() => store.getters["repositories/loading"]);
+const languages = computed(() => store.state.repositories.languages);
+const loading = computed(() => store.state.repositories.loading);
+const startDate = computed(() => store.state.repositories.startDate);
+const endDate = computed(() => store.state.repositories.endDate);
+const stars = computed(() => store.state.repositories.stars);
+
 const error = computed(() => store.getters["repositories/error"]);
 </script>
 
 <style scoped>
+.headline {
+  padding: 15px;
+}
 .card-container {
   display: flex;
 }

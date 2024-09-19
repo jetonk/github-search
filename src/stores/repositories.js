@@ -4,7 +4,11 @@ export default {
   namespaced: true,
   state: {
     language: "",
+    startDate: "",
+    endDate: "",
+    stars: "",
     filters: {},
+    languages: [],
     loading: false,
     error: null,
     page: 1,
@@ -17,7 +21,6 @@ export default {
         ...filter,
         repositories: repositories,
       };
-      console.log("SET_REPOSITORIES state", state);
     },
     SET_PAGE(state) {
       state.page = state.page + 1;
@@ -28,8 +31,17 @@ export default {
     SET_ERROR(state, error) {
       state.error = error;
     },
-    SET_LANGUAGE(state, { language }) {
+    SET_LANGUAGE(state, language) {
+      console.log("SET_LANGUAGE", language);
+
       state.language = language;
+      state.languages = [...state.languages, language];
+    },
+    SET_START_DATE(state, date) {
+      state.startDate = formatDateString(date);
+    },
+    SET_END_DATE(state, date) {
+      state.endDate = formatDateString(date);
     },
     SET_FILTER(state, { filter }) {
       state.filters[filter] = {
@@ -39,18 +51,26 @@ export default {
         stars: 100,
       };
     },
+    SET_STARS(state, stars) {
+      state.stars = stars;
+    },
     REMOVE_FILTER(state, { filter }) {
       state.filters = { ...state.filters };
-      delete state.filters[filter];
+      state.languages = state.languages.filter(
+        (language) => language !== filter
+      );
+      state.language = "";
+      state.startDate = "";
+      state.endDate = "";
+      state.stars = "";
+      state.page = 1;
     },
   },
   actions: {
     async fetchRepositories({ commit, state }, filter) {
-      const { language, page, resultsPerPage } = state;
+      const { language, startDate, endDate, page, resultsPerPage } = state;
       commit("SET_LOADING", true);
       commit("SET_ERROR", null);
-      const startDate = formatDateString(filter.startDate);
-      const endDate = formatDateString(filter.endDate);
       const url = `https://api.github.com/search/repositories?q=language:${language}+stars:>=${filter.stars}+created:${startDate}..${endDate}&sort=stars&order=desc&page=${page}&per_page=${resultsPerPage}`;
 
       try {
@@ -76,6 +96,15 @@ export default {
     },
     setFilter({ commit }, language) {
       commit("SET_FILTER", language);
+    },
+    setStartDate({ commit }, date) {
+      commit("SET_START_DATE", date);
+    },
+    setEndDate({ commit }, date) {
+      commit("SET_END_DATE", date);
+    },
+    setStars({ commit }, stars) {
+      commit("SET_STARS", stars);
     },
     removeFilter({ commit }, filter) {
       commit("REMOVE_FILTER", filter);
