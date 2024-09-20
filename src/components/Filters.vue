@@ -55,7 +55,6 @@ const stars = useRepository("stars", "setStars");
 
 const requiredIfNoLanguages = () => {
   return (value) => {
-    // If the languages array is not empty, return true (valid), otherwise apply required validation
     return languages.value.length > 0 || required(value);
   };
 };

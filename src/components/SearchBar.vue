@@ -12,6 +12,7 @@
 
 <script setup>
 import { ref } from "vue";
+import { useStore } from "vuex";
 
 // components
 import AutoComplete from "primevue/autocomplete";
@@ -19,7 +20,8 @@ import languages from "../utils/languages";
 
 import { useRepository } from "../composables/useRepository";
 
-const language = useRepository("language", "setLanguage");
+const store = useStore();
+const language = useRepository("language", "setLanguageValue");
 
 const filteredItems = ref();
 
@@ -35,10 +37,8 @@ const handleSearch = (event) => {
 
 const onItemSelect = (event) => {
   const selectedItem = event.value;
-  // languageValue.set(selectedItem);
-  // store.dispatch("repositories/setLanguage", { language: selectedItem.name });
+  store.dispatch("repositories/addLanguage", selectedItem.name);
 };
-
 </script>
 <style scoped>
 .custom-autocomplete {

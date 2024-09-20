@@ -9,13 +9,13 @@
     <div v-if="error">Error: {{ error }}</div>
 
     <div v-else class="card-container">
-      <Card class="card" v-for="language in languages">
+      <Card class="card" v-for="repository in repositories">
         <template #title>
-          {{ language }}
+          {{ repository.language }}
         </template>
         <template #content>
           <VirtualScroller
-            :items="filters[language]?.repositories"
+            :items="repository.items"
             :itemSize="50"
             :showLoader="true"
             :loading="loading"
@@ -59,7 +59,7 @@ const filtersSelected = computed(
 );
 
 const filters = computed(() => store.getters["repositories/filters"]);
-const languages = computed(() => store.state.repositories.languages);
+const repositories = computed(() => store.state.repositories.repositories);
 const loading = computed(() => store.state.repositories.loading);
 const startDate = computed(() =>
   formatDateString(store.state.repositories.startDate)

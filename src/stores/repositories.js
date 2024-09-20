@@ -1,5 +1,4 @@
-import { formatDateString } from "../utils/date";
-import languages from "../utils/languages";
+import { getRepositories } from "../api/index";
 
 export default {
   namespaced: true,
@@ -8,7 +7,7 @@ export default {
     startDate: "",
     endDate: "",
     stars: "",
-    filters: {},
+    repositories: [],
     filtersSelected: false,
     languages: [],
     loading: false,
@@ -17,13 +16,8 @@ export default {
     resultsPerPage: 10,
   },
   mutations: {
-    SET_REPOSITORIES(state, { repositories, filter }) {
-      const { language } = state;
-
-      state.filters[language.name] = {
-        ...filter,
-        repositories: repositories,
-      };
+    SET_REPOSITORIES(state, { repositories }) {
+      state.repositories = repositories;
       state.filtersSelected = true;
     },
     SET_PAGE(state) {
@@ -35,14 +29,12 @@ export default {
     SET_ERROR(state, error) {
       state.error = error;
     },
-    SET_LANGUAGE(state, language) {
+    SET_LANGUAGE_VALUE(state, language) {
       state.language = language;
-      if (language.name) {
-        state.languages = [...state.languages, language.name];
-        state.filters[language.name] = {
-          language: language.name,
-        };
-      }
+    },
+    ADD_LANGUAGE(state, language) {
+      state.languages = [...state.languages, language];
+      state.language = "";
       state.page = 1;
     },
     SET_START_DATE(state, date) {
@@ -52,14 +44,6 @@ export default {
     SET_END_DATE(state, date) {
       state.endDate = date;
       state.page = 1;
-    },
-    SET_FILTER(state, { filter }) {
-      state.filters[filter] = {
-        language: state.language,
-        from: "",
-        to: "",
-        stars: 0,
-      };
     },
     SET_STARS(state, stars) {
       state.stars = stars;
@@ -75,39 +59,31 @@ export default {
   },
   actions: {
     async fetchRepositories({ commit, state }) {
-      const { language, startDate, endDate, stars, page, resultsPerPage } =
-        state;
-
       commit("SET_LOADING", true);
       commit("SET_ERROR", null);
 
-      const startDateFormatted = formatDateString(startDate);
-      const endDateFormatted = formatDateString(endDate);
-      const url = `https://api.github.com/search/repositories?q=language:${language.name}+stars:>=${stars}+created:${startDateFormatted}..${endDateFormatted}&sort=stars&order=desc&page=${page}&per_page=${resultsPerPage}`;
-
       try {
         commit("SET_PAGE");
-        const response = await fetch(url, {
-          headers: {
-            Accept: "application/vnd.github+json",
-            Authorization: `Bearer ${import.meta.env.VITE_GITHUB_PAT}`,
-            "X-GitHub-Api-Version": "2022-11-28",
-          },
-        });
-        const { items } = await response.json();
 
-        commit("SET_REPOSITORIES", { repositories: items });
+        const requests = [];
+        state.languages.map((language) =>
+          requests.push(getRepositories(language, state))
+        );
+
+        const response = await Promise.all(requests);
+
+        commit("SET_REPOSITORIES", { repositories: response });
       } catch (error) {
         commit("SET_ERROR", error.message);
       } finally {
         commit("SET_LOADING", false);
       }
     },
-    setLanguage({ commit }, language) {
-      commit("SET_LANGUAGE", language);
+    setLanguageValue({ commit }, language) {
+      commit("SET_LANGUAGE_VALUE", language);
     },
-    setFilter({ commit }, language) {
-      commit("SET_FILTER", language);
+    addLanguage({ commit }, language) {
+      commit("ADD_LANGUAGE", language);
     },
     setStartDate({ commit }, date) {
       commit("SET_START_DATE", date);
