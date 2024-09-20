@@ -11,12 +11,6 @@
       <RepositoriesList />
     </SplitterPanel>
   </Splitter>
-  <!-- <div class="md:container md:mx-auto">
-    <div class="grid grid-cols-2 gap-4">
-      
-      
-    </div>
-  </div> -->
 </template>
 
 <script setup>

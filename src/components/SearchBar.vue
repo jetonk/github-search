@@ -1,38 +1,25 @@
 <template>
   <AutoComplete
     placeholder="Search language"
-    v-model="languageValue"
+    v-model="language"
     :suggestions="filteredItems"
     optionLabel="name"
     @complete="handleSearch"
     @item-select="onItemSelect"
-    blur="validateLanguage"
     class="custom-autocomplete"
   />
 </template>
 
 <script setup>
-import { computed, reactive, ref, defineProps } from "vue";
-import { useStore } from "vuex";
+import { ref } from "vue";
 
 // components
 import AutoComplete from "primevue/autocomplete";
 import languages from "../utils/languages";
 
-defineProps(["validateLanguage"]);
+import { useRepository } from "../composables/useRepository";
 
-const store = useStore();
-
-const languageValue = computed({
-  get() {
-    return store.state.repositories.language;
-  },
-  set(value) {
-    if (value.name) {
-      store.dispatch("repositories/setLanguage", value.name);
-    }
-  },
-});
+const language = useRepository("language", "setLanguage");
 
 const filteredItems = ref();
 
@@ -51,6 +38,7 @@ const onItemSelect = (event) => {
   // languageValue.set(selectedItem);
   // store.dispatch("repositories/setLanguage", { language: selectedItem.name });
 };
+
 </script>
 <style scoped>
 .custom-autocomplete {

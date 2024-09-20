@@ -6,25 +6,35 @@
       :key="language"
       :label="language"
       removable
-      @remove="handleChipRemove"
+      @remove="handleChipRemove(language)"
       class="custom-chip"
     />
   </div>
   <div class="filter-container">
-    <SearchBar :validateLanguage="validateLanguage" />
-    <span class="error" v-if="errors.language">{{ errors.language }}</span>
+    <SearchBar />
+    <span class="error" v-if="$v.language.$error">Language is required</span>
+
     <DatePicker v-model="startDate" placeholder="Date from" />
-    <span class="error" v-if="errors.stars">{{ errors.startDate }}</span>
+    <span class="error" v-if="$v.startDate.$error">Start date is required</span>
+
     <DatePicker v-model="endDate" placeholder="Date to" />
-    <span class="error" v-if="errors.stars">{{ errors.endDate }}</span>
+    <span class="error" v-if="$v.endDate.$error">End date is required</span>
+
     <InputText type="number" v-model="stars" placeholder="Stars" />
-    <span class="error" v-if="errors.stars">{{ errors.stars }}</span>
+    <span class="error" v-if="$v.stars.$error">Stars are required</span>
+    <span class="error" v-if="!$v.stars.minValue"
+      >Stars must be at least 0</span
+    >
+
     <Button class="btn-search" label="Search" @click="search" />
   </div>
 </template>
 <script setup>
-import { computed, reactive } from "vue";
+import { computed } from "vue";
 import { useStore } from "vuex";
+import { useVuelidate } from "@vuelidate/core";
+import { required, minValue } from "@vuelidate/validators";
+
 import InputText from "primevue/inputtext";
 
 import SearchBar from "../components/SearchBar.vue";
@@ -35,6 +45,7 @@ import Button from "primevue/button";
 import { useRepository } from "../composables/useRepository";
 
 const store = useStore();
+
 const languages = computed(() => store.state.repositories.languages);
 const language = computed(() => store.state.repositories.language);
 
@@ -42,69 +53,31 @@ const startDate = useRepository("startDate", "setStartDate");
 const endDate = useRepository("endDate", "setEndDate");
 const stars = useRepository("stars", "setStars");
 
-const errors = reactive({
-  language: "",
-  stars: "",
-  startDate: "",
-  endDate: "",
-});
+const requiredIfNoLanguages = () => {
+  return (value) => {
+    // If the languages array is not empty, return true (valid), otherwise apply required validation
+    return languages.value.length > 0 || required(value);
+  };
+};
 
-const validateLanguage = computed(() => {
-  if (!language.value) {
-    errors.language = "Language is required.";
-    return false;
-  } else {
-    errors.language = "";
-    return true;
-  }
-});
+const rules = {
+  language: { required: requiredIfNoLanguages() },
+  startDate: { required },
+  endDate: { required },
+  stars: { required, minValue: minValue(1) },
+};
 
-const validateStars = computed(() => {
-  if (!stars.value) {
-    errors.stars = "Stars is required.";
-    return false;
-  } else {
-    errors.stars = "";
-    return true;
-  }
-});
+const $v = useVuelidate(rules, { language, startDate, endDate, stars });
 
-const validateStartDate = computed(() => {
-  if (!startDate.value) {
-    errors.startDate = "Start date is required.";
-    return false;
-  } else {
-    errors.startDate = "";
-    return true;
-  }
-});
-
-const validateEndDate = computed(() => {
-  if (!endDate.value) {
-    errors.endDate = "End date is required.";
-    return false;
-  } else {
-    errors.endDate = "";
-    return true;
-  }
-});
-
-const handleChipRemove = (filter) => {
-  store.dispatch("repositories/removeFilter", filter);
+const handleChipRemove = (language) => {
+  store.dispatch("repositories/removeFilter", language);
 };
 
 function search() {
-  const isLanguageValid = validateLanguage.value;
-  const isStarsValid = validateStars.value;
-  const isStartDateValid = validateStartDate.value;
-  const isEndDateValid = validateEndDate.value;
+  $v.value.$touch();
 
-  if (isLanguageValid && isStarsValid && isStartDateValid && isEndDateValid) {
-    store.dispatch("repositories/fetchRepositories", {
-      startDate: startDate.value,
-      endDate: endDate.value,
-      stars: stars.value,
-    });
+  if (!$v.value.$invalid) {
+    store.dispatch("repositories/fetchRepositories");
   }
 }
 </script>

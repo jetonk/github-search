@@ -1,33 +1,38 @@
 <template>
   <div>
-    <div v-if="languages.length > 0" class="headline">
+    <div v-if="filtersSelected" class="headline">
       <h3>Github Repositories</h3>
       <div>Between: {{ startDate }} and {{ endDate }}</div>
       <div>With at least {{ stars }} stars</div>
     </div>
+
     <div v-if="error">Error: {{ error }}</div>
+
     <div v-else class="card-container">
-      <Card class="card" v-for="(filter, key) in filters" :key="key">
+      <Card class="card" v-for="language in languages">
         <template #title>
-          {{ key }}
+          {{ language }}
         </template>
         <template #content>
           <VirtualScroller
-            :items="filter.repositories"
+            :items="filters[language]?.repositories"
             :itemSize="50"
             :showLoader="true"
             :loading="loading"
+            :dropdown="true"
             class="border border-surface-200 dark:border-surface-700 rounded"
             style="width: 270px; height: 99vh"
           >
             <template v-slot:item="{ item, options }">
               <div class="card-item">
-                {{ item.name }} /
                 <a :href="item.html_url" target="_blank">{{
                   item.full_name
                 }}</a>
-                {{ item.description }}
-                ⭐ {{ item.stargazers_count }}
+                <div>{{ item.description }}</div>
+                <div>
+                  Created: {{ formatDateString(new Date(item.created_at)) }}
+                </div>
+                <div>⭐ {{ item.stargazers_count }}</div>
               </div>
             </template>
           </VirtualScroller>
@@ -45,15 +50,24 @@ import VirtualScroller from "primevue/virtualscroller";
 // components
 import Card from "primevue/card";
 
+import { formatDateString } from "../utils/date";
+
 const store = useStore();
 
-const filters = computed(() => store.state.repositories.filters);
+const filtersSelected = computed(
+  () => store.state.repositories.filtersSelected
+);
+
+const filters = computed(() => store.getters["repositories/filters"]);
 const languages = computed(() => store.state.repositories.languages);
 const loading = computed(() => store.state.repositories.loading);
-const startDate = computed(() => store.state.repositories.startDate);
-const endDate = computed(() => store.state.repositories.endDate);
+const startDate = computed(() =>
+  formatDateString(store.state.repositories.startDate)
+);
+const endDate = computed(() =>
+  formatDateString(store.state.repositories.endDate)
+);
 const stars = computed(() => store.state.repositories.stars);
-
 const error = computed(() => store.getters["repositories/error"]);
 </script>
 

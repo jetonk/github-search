@@ -1,4 +1,5 @@
 import { formatDateString } from "../utils/date";
+import languages from "../utils/languages";
 
 export default {
   namespaced: true,
@@ -8,6 +9,7 @@ export default {
     endDate: "",
     stars: "",
     filters: {},
+    filtersSelected: false,
     languages: [],
     loading: false,
     error: null,
@@ -17,10 +19,12 @@ export default {
   mutations: {
     SET_REPOSITORIES(state, { repositories, filter }) {
       const { language } = state;
-      state.filters[language] = {
+
+      state.filters[language.name] = {
         ...filter,
         repositories: repositories,
       };
+      state.filtersSelected = true;
     },
     SET_PAGE(state) {
       state.page = state.page + 1;
@@ -32,46 +36,54 @@ export default {
       state.error = error;
     },
     SET_LANGUAGE(state, language) {
-      console.log("SET_LANGUAGE", language);
-
       state.language = language;
-      state.languages = [...state.languages, language];
+      if (language.name) {
+        state.languages = [...state.languages, language.name];
+        state.filters[language.name] = {
+          language: language.name,
+        };
+      }
+      state.page = 1;
     },
     SET_START_DATE(state, date) {
-      state.startDate = formatDateString(date);
+      state.startDate = date;
+      state.page = 1;
     },
     SET_END_DATE(state, date) {
-      state.endDate = formatDateString(date);
+      state.endDate = date;
+      state.page = 1;
     },
     SET_FILTER(state, { filter }) {
       state.filters[filter] = {
         language: state.language,
         from: "",
         to: "",
-        stars: 100,
+        stars: 0,
       };
     },
     SET_STARS(state, stars) {
       state.stars = stars;
     },
-    REMOVE_FILTER(state, { filter }) {
-      state.filters = { ...state.filters };
-      state.languages = state.languages.filter(
-        (language) => language !== filter
-      );
+    REMOVE_FILTER(state, language) {
+      state.filters[language] = {};
+      state.languages = [
+        ...state.languages.filter((lang) => lang !== language),
+      ];
       state.language = "";
-      state.startDate = "";
-      state.endDate = "";
-      state.stars = "";
-      state.page = 1;
+      state.filtersSelected = false;
     },
   },
   actions: {
-    async fetchRepositories({ commit, state }, filter) {
-      const { language, startDate, endDate, page, resultsPerPage } = state;
+    async fetchRepositories({ commit, state }) {
+      const { language, startDate, endDate, stars, page, resultsPerPage } =
+        state;
+
       commit("SET_LOADING", true);
       commit("SET_ERROR", null);
-      const url = `https://api.github.com/search/repositories?q=language:${language}+stars:>=${filter.stars}+created:${startDate}..${endDate}&sort=stars&order=desc&page=${page}&per_page=${resultsPerPage}`;
+
+      const startDateFormatted = formatDateString(startDate);
+      const endDateFormatted = formatDateString(endDate);
+      const url = `https://api.github.com/search/repositories?q=language:${language.name}+stars:>=${stars}+created:${startDateFormatted}..${endDateFormatted}&sort=stars&order=desc&page=${page}&per_page=${resultsPerPage}`;
 
       try {
         commit("SET_PAGE");
@@ -82,9 +94,9 @@ export default {
             "X-GitHub-Api-Version": "2022-11-28",
           },
         });
-
         const { items } = await response.json();
-        commit("SET_REPOSITORIES", { repositories: items, filter });
+
+        commit("SET_REPOSITORIES", { repositories: items });
       } catch (error) {
         commit("SET_ERROR", error.message);
       } finally {
@@ -106,11 +118,12 @@ export default {
     setStars({ commit }, stars) {
       commit("SET_STARS", stars);
     },
-    removeFilter({ commit }, filter) {
-      commit("REMOVE_FILTER", filter);
+    removeFilter({ commit }, language) {
+      commit("REMOVE_FILTER", language);
     },
   },
   getters: {
+    languages: (state) => state.languages,
     repositories: (state) => state.repositories,
     filters: (state) => state.filters,
     loading: (state) => state.loading,
