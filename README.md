@@ -1,5 +1,25 @@
 # Vue 3 + Vite
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+- Project is bootstraped using Vite
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+## Main npm packages
+- `vue`,
+- `vuex` for state management,
+- `vue-router` for routing,
+- `primevue` for UI components,
+- `@vuelidate/core` and `@vuelidate/validators` for Form Validation
+
+
+### Steps to run the project
+- First step is to create a `.env.local` file by copying `env-sample`,
+- Second step is to set `VITE_GITHUB_PAT` token into the `.env.local`, which is used for authorization with GitHub API,
+#### Then we can execute the following commands:
+- `npm install`
+- `npm run dev`
+
+### Run tests
+- `npm run test`
+
+### Notes:
+- I wrote some tests, but the code is not fully covered in tests.
+- There might be some bugs or unexpected UI/UX experience

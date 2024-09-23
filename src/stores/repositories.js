@@ -8,7 +8,7 @@ export default {
     endDate: "2024-09-13",
     stars: "123",
     repositories: {},
-    fetched: false,
+    fetched: {},
     languages: [],
     loading: {},
     error: {},
@@ -46,7 +46,7 @@ export default {
       } else {
         state.repositories[language] = repositories;
       }
-      state.fetched = true;
+      state.fetched[language] = true;
     },
     RESET_REPOSITORIES(state, { language }) {
       state.repositories[language] = [];

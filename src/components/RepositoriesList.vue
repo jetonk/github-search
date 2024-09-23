@@ -1,22 +1,14 @@
 <template>
   <div>
-    <div v-if="fetched" class="headline">
+    <div v-if="Object.keys(fetched).length > 0" class="headline">
       <h3>Github Repositories</h3>
       <div>Between: {{ startDate }} and {{ endDate }}</div>
       <div>With at least {{ stars }} stars</div>
     </div>
-
     <div class="card-container">
-      <Card
-        class="card"
-        v-for="language in languages"
-        v-if="fetched"
-        :key="language"
-      >
-        <template #title>
+      <Card class="card" v-for="language in languages" :key="language">
+        <template #content v-if="fetched[language]">
           {{ language }}
-        </template>
-        <template #content>
           <div
             ref="listContainer"
             class="list-container"
