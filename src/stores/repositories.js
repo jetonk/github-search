@@ -4,30 +4,55 @@ export default {
   namespaced: true,
   state: {
     language: "",
-    startDate: "",
-    endDate: "",
-    stars: "",
-    repositories: [],
-    filtersSelected: false,
+    startDate: "2020-01-13",
+    endDate: "2024-09-13",
+    stars: "123",
+    repositories: {},
+    fetched: false,
     languages: [],
-    loading: false,
-    error: null,
-    page: 1,
+    loading: {},
+    error: {},
+    pagination: {},
+    totalPages: {},
     resultsPerPage: 10,
   },
   mutations: {
-    SET_REPOSITORIES(state, { repositories }) {
-      state.repositories = repositories;
-      state.filtersSelected = true;
+    SET_LOADING(state, { language, isLoading }) {
+      if (!state.loading[language]) {
+        state.loading[language] = isLoading;
+      } else {
+        state.loading[language] = isLoading;
+      }
     },
-    SET_PAGE(state) {
-      state.page = state.page + 1;
+    SET_ERROR(state, { language, error }) {
+      if (!state.error[language]) {
+        state.error[language] = error;
+      } else {
+        state.error[language] = error;
+      }
     },
-    SET_LOADING(state, loading) {
-      state.loading = loading;
+    SET_PAGINATION(state, { language, page }) {
+      state.pagination[language] = page;
     },
-    SET_ERROR(state, error) {
-      state.error = error;
+    SET_TOTAL_PAGES(state, { language, totalPages }) {
+      state.totalPages[language] = totalPages;
+    },
+    SET_REPOSITORIES(state, { language, repositories }) {
+      if (state.repositories[language]) {
+        state.repositories[language] = [
+          ...state.repositories[language],
+          ...repositories,
+        ];
+      } else {
+        state.repositories[language] = repositories;
+      }
+      state.fetched = true;
+    },
+    RESET_REPOSITORIES(state, { language }) {
+      state.repositories[language] = [];
+      state.pagination[language] = 0;
+      state.totalPages[language] = null;
+      state.error[language] = null;
     },
     SET_LANGUAGE_VALUE(state, language) {
       state.language = language;
@@ -35,49 +60,66 @@ export default {
     ADD_LANGUAGE(state, language) {
       state.languages = [...state.languages, language];
       state.language = "";
-      state.page = 1;
     },
     SET_START_DATE(state, date) {
       state.startDate = date;
-      state.page = 1;
     },
     SET_END_DATE(state, date) {
       state.endDate = date;
-      state.page = 1;
     },
     SET_STARS(state, stars) {
       state.stars = stars;
     },
     REMOVE_FILTER(state, language) {
-      state.filters[language] = {};
       state.languages = [
         ...state.languages.filter((lang) => lang !== language),
       ];
       state.language = "";
-      state.filtersSelected = false;
+      state.fetched = false;
     },
   },
   actions: {
-    async fetchRepositories({ commit, state }) {
-      commit("SET_LOADING", true);
-      commit("SET_ERROR", null);
+    async fetchRepositories({ commit, state }, { language }) {
+      if (state.loading[language]) {
+        return;
+      }
+
+      commit("SET_LOADING", { language, isLoading: true });
+      commit("SET_ERROR", { language, error: null });
 
       try {
-        commit("SET_PAGE");
+        const currentPage = state.pagination[language] || 0;
+        const nextPage = currentPage + 1;
 
-        const requests = [];
-        state.languages.map((language) =>
-          requests.push(getRepositories(language, state))
+        const { items, totalCount } = await getRepositories(
+          language,
+          state,
+          nextPage
         );
 
-        const response = await Promise.all(requests);
+        commit("SET_REPOSITORIES", {
+          language,
+          repositories: items,
+        });
 
-        commit("SET_REPOSITORIES", { repositories: response });
+        commit("SET_PAGINATION", { language, page: nextPage });
+
+        if (!state.totalPages[language]) {
+          const totalPages = Math.ceil(totalCount / state.resultsPerPage);
+          commit("SET_TOTAL_PAGES", { language, totalPages });
+        }
       } catch (error) {
-        commit("SET_ERROR", error.message);
+        commit("SET_ERROR", { language, error: error.message });
       } finally {
-        commit("SET_LOADING", false);
+        commit("SET_LOADING", { language, isLoading: false });
       }
+    },
+    async fetchAllRepositories({ dispatch, state }) {
+      const fetchPromises = state.languages.map((language) => {
+        dispatch("fetchRepositories", { language });
+      });
+
+      await Promise.all(fetchPromises);
     },
     setLanguageValue({ commit }, language) {
       commit("SET_LANGUAGE_VALUE", language);
@@ -96,6 +138,7 @@ export default {
     },
     removeFilter({ commit }, language) {
       commit("REMOVE_FILTER", language);
+      commit("RESET_REPOSITORIES", language);
     },
   },
   getters: {

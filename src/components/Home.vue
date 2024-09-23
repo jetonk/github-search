@@ -1,5 +1,5 @@
 <template>
-  <Splitter style="height: 100vh" class="mb-5">
+  <Splitter style="min-height: 100vh" class="mb-5">
     <SplitterPanel
       :size="20"
       :minSize="15"

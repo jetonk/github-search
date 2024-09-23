@@ -3,8 +3,8 @@ import { formatDateString } from "../utils/date";
 const API_URL = import.meta.env.VITE_API_URL;
 const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_PAT;
 
-export async function getRepositories(language, payload) {
-  const { startDate, endDate, stars, page, resultsPerPage } = payload;
+export async function getRepositories(language, payload, page) {
+  const { startDate, endDate, stars, resultsPerPage } = payload;
 
   const startDateFormatted = formatDateString(startDate);
   const endDateFormatted = formatDateString(endDate);
