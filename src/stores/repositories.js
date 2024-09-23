@@ -4,12 +4,12 @@ export default {
   namespaced: true,
   state: {
     language: "",
-    startDate: "2020-01-13",
-    endDate: "2024-09-13",
-    stars: "123",
+    languages: [],
+    startDate: "",
+    endDate: "",
+    stars: "",
     repositories: {},
     fetched: {},
-    languages: [],
     loading: {},
     error: {},
     pagination: {},
@@ -58,7 +58,12 @@ export default {
       state.language = language;
     },
     ADD_LANGUAGE(state, language) {
-      state.languages = [...state.languages, language];
+      console.log("state", state);
+      console.log("language", language);
+
+      if (!state.languages.find((lang) => lang === language)) {
+        state.languages = [...state.languages, language];
+      }
       state.language = "";
     },
     SET_START_DATE(state, date) {

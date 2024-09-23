@@ -8,7 +8,7 @@
     <div class="card-container">
       <Card class="card" v-for="language in languages" :key="language">
         <template #content v-if="fetched[language]">
-          {{ language }}
+          <h3>{{ language }}</h3>
           <div
             ref="listContainer"
             class="list-container"
@@ -54,7 +54,7 @@ const languages = computed(() => store.state.repositories.languages);
 const fetched = computed(() => store.state.repositories.fetched);
 const repositories = computed(() => store.state.repositories.repositories);
 const loading = computed(() => store.state.repositories.loading);
-const error = computed(() => store.getters["repositories/error"]);
+const error = computed(() => store.state.repositories.error);
 
 const startDate = computed(() =>
   formatDateString(store.state.repositories.startDate)
