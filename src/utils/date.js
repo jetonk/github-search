@@ -1,9 +1,11 @@
 export function formatDateString(dateString) {
   const date = new Date(dateString);
 
-  if (isNaN(date)) {
-    throw new Error("Invalid date string");
-  }
+  const formattedDate = [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
 
-  return date.toISOString().split("T")[0];
+  return formattedDate;
 }

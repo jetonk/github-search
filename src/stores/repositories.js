@@ -37,16 +37,19 @@ export default {
     SET_TOTAL_PAGES(state, { language, totalPages }) {
       state.totalPages[language] = totalPages;
     },
-    SET_REPOSITORIES(state, { language, repositories }) {
+    SET_REPOSITORIES(state, { language, repositories, totalCount }) {
       if (state.repositories[language]) {
         state.repositories[language] = [
           ...state.repositories[language],
           ...repositories,
+          ...totalCount,
         ];
       } else {
         state.repositories[language] = repositories;
+        state.repositories[language].totalCount = totalCount;
       }
       state.fetched[language] = true;
+      state.loading[language] = false;
     },
     RESET_REPOSITORIES(state, { language }) {
       state.repositories[language] = [];
@@ -58,9 +61,6 @@ export default {
       state.language = language;
     },
     ADD_LANGUAGE(state, language) {
-      console.log("state", state);
-      console.log("language", language);
-
       if (!state.languages.find((lang) => lang === language)) {
         state.languages = [...state.languages, language];
       }
@@ -96,7 +96,7 @@ export default {
         const currentPage = state.pagination[language] || 0;
         const nextPage = currentPage + 1;
 
-        const { items, totalCount } = await getRepositories(
+        const { items, total_count } = await getRepositories(
           language,
           state,
           nextPage
@@ -105,16 +105,18 @@ export default {
         commit("SET_REPOSITORIES", {
           language,
           repositories: items,
+          totalCount: total_count,
         });
 
         commit("SET_PAGINATION", { language, page: nextPage });
 
         if (!state.totalPages[language]) {
-          const totalPages = Math.ceil(totalCount / state.resultsPerPage);
+          const totalPages = Math.ceil(total_count / state.resultsPerPage);
           commit("SET_TOTAL_PAGES", { language, totalPages });
         }
       } catch (error) {
         commit("SET_ERROR", { language, error: error.message });
+        commit("SET_LOADING", { language, isLoading: false });
       } finally {
         commit("SET_LOADING", { language, isLoading: false });
       }

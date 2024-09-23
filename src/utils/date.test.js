@@ -11,7 +11,7 @@ describe("formatDateString", () => {
 
   it("formats a date string with a different format correctly", () => {
     const input = "01/10/2023";
-    const expectedOutput = "2023-01-09";
+    const expectedOutput = "2023-01-10";
     expect(formatDateString(input)).toBe(expectedOutput);
   });
 });

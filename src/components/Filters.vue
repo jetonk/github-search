@@ -14,10 +14,19 @@
     <SearchBar />
     <span class="error" v-if="$v.language.$error">Language is required</span>
 
-    <DatePicker v-model="startDate" placeholder="Date from" />
+    <DatePicker
+      v-model="startDate"
+      :maxDate="startDateValidation"
+      placeholder="Date from"
+    />
     <span class="error" v-if="$v.startDate.$error">Start date is required</span>
 
-    <DatePicker v-model="endDate" placeholder="Date to" />
+    <DatePicker
+      v-model="endDate"
+      :minDate="endDateMinDateValidation"
+      :maxDate="endDateValidation"
+      placeholder="Date to"
+    />
     <span class="error" v-if="$v.endDate.$error">End date is required</span>
 
     <InputText type="number" v-model="stars" placeholder="Stars" />
@@ -33,8 +42,7 @@
 import { computed } from "vue";
 import { useStore } from "vuex";
 import { useVuelidate } from "@vuelidate/core";
-import { required, minValue } from "@vuelidate/validators";
-
+import { Rules } from "../validation/rules";
 import InputText from "primevue/inputtext";
 
 import SearchBar from "../components/SearchBar.vue";
@@ -53,20 +61,23 @@ const startDate = useRepository("startDate", "setStartDate");
 const endDate = useRepository("endDate", "setEndDate");
 const stars = useRepository("stars", "setStars");
 
-const requiredIfNoLanguages = () => {
-  return (value) => {
-    return languages.value.length > 0 || required(value);
-  };
-};
-
-const rules = {
-  language: { required: requiredIfNoLanguages() },
-  startDate: { required },
-  endDate: { required },
-  stars: { required, minValue: minValue(1) },
-};
-
+const rules = Rules(languages);
 const $v = useVuelidate(rules, { language, startDate, endDate, stars });
+
+const startDateValidation = computed(() => {
+  if (startDate.value) {
+    return new Date(startDate.value);
+  }
+  return new Date();
+});
+
+const endDateMinDateValidation = computed(() => {
+  return new Date(startDate.value);
+});
+
+const endDateValidation = computed(() => {
+  return new Date();
+});
 
 const handleChipRemove = (language) => {
   store.dispatch("repositories/removeFilter", language);

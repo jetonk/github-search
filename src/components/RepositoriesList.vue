@@ -31,10 +31,13 @@
                 <div>⭐ {{ repository.stargazers_count }}</div>
               </div>
             </div>
-            <div v-if="loading[language]" class="loading-more">Loading..</div>
+            <div v-if="loading[language]" class="loading">Loading..</div>
+            <div v-if="repositories[language].totalCount === 0" class="message">
+              Repositories not found...
+            </div>
+            <div v-if="error[language]" class="message">Error: {{ error }}</div>
           </div>
         </template>
-        <div v-if="error[language]">Error: {{ error }}</div>
       </Card>
     </div>
   </div>
@@ -85,7 +88,7 @@ const handleScroll = (language) => {
   padding: 15px;
 }
 .list-container {
-  height: 420px;
+  height: 430px;
   overflow-y: auto;
   border: 0.5px solid #ccc;
   border-radius: 4px;
@@ -102,9 +105,15 @@ const handleScroll = (language) => {
   display: flex;
   flex: 1 0 30%;
   flex-direction: column;
-  padding: 15px;
+  padding: 15px 15px 5px 15px;
 }
-.loading-more {
-  padding: 15px;
+.loading {
+  display: flex;
+  justify-content: center;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+.message {
+  padding: 10px;
 }
 </style>
